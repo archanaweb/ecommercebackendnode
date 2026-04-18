@@ -3,6 +3,8 @@ import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.models.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
+import fs from "fs"
+import path from "path";
 
 const registerUser = asyncHandler( async (req, res) => {
     // res.status(200).json({
@@ -44,16 +46,34 @@ const registerUser = asyncHandler( async (req, res) => {
 
     const avatarLocalPath = req.files?.avatar[0]?.path
     const coverImageLocalPath = req.files?.coverImage[0]?.path
+    // const filePath = path.resolve("public/temp", req.files.avatar[0].filename);
+
+    // const testPath = path.resolve("public/temp/test-from-node.txt");
+
+    // const buffer = fs.readFileSync(req.files.avatar[0].path);
+    // console.log("buffer",buffer.slice(0, 4));
+
+    // fs.writeFileSync(testPath, "Hello from Node");
+
+    // console.log("Test file created at:", testPath);
+
+    // console.log("FILE EXISTS:", fs.existsSync(filePath));
+    // console.log("CWD:", process.cwd());
+    // console.log("Files:", fs.readdirSync(path.resolve("public/temp")));         
+    // // console.log("files: ", req.files)
+    console.log("avatar local path: ", avatarLocalPath)
 
     if(!avatarLocalPath){
-        throw new ApiError(400, "Avatar file is required")
+        throw new ApiError(400, "Avatar file is required in local")
     }
 
     const avatar = await uploadOnCloudinary(avatarLocalPath)
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
+    console.log("avatar for cloudinary upload", avatar)
+
     if(!avatar){
-        throw new ApiError(400, "Avatar file is required")
+        throw new ApiError(400, "Avatar file is required on cloudinary")
     }
 
     const user = await User.create({
