@@ -9,17 +9,22 @@ import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
-        const user = await User.findOne(userId)
+        const user = await User.findById(userId)
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
-
+        
         user.refreshToken = refreshToken
+
 
         await user.save({validateBeforeSave: false})
         return {accessToken, refreshToken}
         
     } catch (error) {
-        throw new ApiError(500, "something went wrong while generaing access and refresh token")
+        console.log("token error: ", error)
+        throw new ApiError(500, "something went wrong while generating access and refresh token")
     }
 }
 
@@ -39,10 +44,11 @@ const registerUser = asyncHandler( async (req, res) => {
     //check for user creation
     //return response
 
-    const {username, email, fullName, password} = req.body
-    // console.log("fullname",fullName)
-    // console.log("email",email)
+    console.log("req body data", req.body)
 
+    const {username, email, fullName, password} = req.body
+    console.log("fullname",fullName)
+    console.log("email",email)
     // if(fullName == ""){
     //     throw new ApiError(400, "fullname is required")
     // }
@@ -78,7 +84,7 @@ const registerUser = asyncHandler( async (req, res) => {
     // console.log("CWD:", process.cwd());
     // console.log("Files:", fs.readdirSync(path.resolve("public/temp")));         
     // // console.log("files: ", req.files)
-    console.log("avatar local path: ", avatarLocalPath)
+    // console.log("avatar local path: ", avatarLocalPath)
 
     if(!avatarLocalPath){
         throw new ApiError(400, "Avatar file is required in local")
@@ -87,7 +93,7 @@ const registerUser = asyncHandler( async (req, res) => {
     const avatar = await uploadOnCloudinary(avatarLocalPath)
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
-    console.log("avatar for cloudinary upload", avatar)
+    // console.log("avatar for cloudinary upload", avatar)
 
     if(!avatar){
         throw new ApiError(400, "Avatar file is required on cloudinary")
@@ -119,15 +125,6 @@ const registerUser = asyncHandler( async (req, res) => {
 
 const loginUser = asyncHandler( async (req, res) => {
 
-    // ******steps for login user
-    //get username password from user
-    //validate - not empaty
-    //find user
-    //check password
-    //send response 
-    //access and refresh token
-    //send cookie
-
     const {email, username, password} = req.body
 
     if(!(username || email)){
@@ -148,7 +145,7 @@ const loginUser = asyncHandler( async (req, res) => {
 
     const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
 
-    const loggedInUser = await User.findOne(user._id).
+    const loggedInUser = await User.findById(user._id).
     select("-password -refreshToken")
 
     const options = {
