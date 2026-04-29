@@ -48,17 +48,17 @@ app.get('/', (req, res) => {
 //     res.send("<h2>Learning from chai and code</h2>")
 // })
 // // get a list of jokes
-// app.get("/api/jokes", (req, res) => {
-//     const jokes = [
-//         {id: 1, title: "A joke", conten: "This is a joke"},
-//         {id: 1, title: "Another joke", conten: "This is Another joke"},
-//         {id: 1, title: "A third joke", conten: "This is a third joke"},
-//         {id: 1, title: "A fourth joke", conten: "This is a fourth joke"},
-//         {id: 1, title: "A fifth joke", conten: "This is a fifth joke"}
-//     ]
-//     res.json(jokes)
+app.get("/api/jokes", (req, res) => {
+    const jokes = [
+        {id: 1, title: "A joke", conten: "This is a joke"},
+        {id: 1, title: "Another joke", conten: "This is Another joke"},
+        {id: 1, title: "A third joke", conten: "This is a third joke"},
+        {id: 1, title: "A fourth joke", conten: "This is a fourth joke"},
+        {id: 1, title: "A fifth joke", conten: "This is a fifth joke"}
+    ]
+    res.json(jokes)
 
-// })
+})
 
 
 
