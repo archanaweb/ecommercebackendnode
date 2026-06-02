@@ -8,6 +8,8 @@ import path from "path";
 import jwt from "jsonwebtoken";
 import { channel } from "diagnostics_channel";
 import mongoose from "mongoose";
+import { oauth2client } from "../utils/googleConfig.js";
+import axios from "axios"
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
@@ -68,9 +70,17 @@ const registerUser = asyncHandler( async (req, res) => {
     if(existedUser){
         throw new ApiError(409, "User already exist")
     }
+    console.log("files: ",req.files)
 
     const avatarLocalPath = req.files?.avatar[0]?.path
-    const coverImageLocalPath = req.files?.coverImage[0]?.path
+
+
+    let coverImageLocalPath;
+
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+        coverImageLocalPath = req.files?.coverImage[0]?.path
+    }
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path
     // const filePath = path.resolve("public/temp", req.files.avatar[0].filename);
 
     // const testPath = path.resolve("public/temp/test-from-node.txt");
@@ -127,7 +137,8 @@ const registerUser = asyncHandler( async (req, res) => {
 
 const loginUser = asyncHandler( async (req, res) => {
 
-    const {email, username, password} = req.body
+    const {email, username, password} =  req.body
+    console.log(username)
 
     if(!(username || email)){
         throw new ApiError(400, "username or email required")
@@ -196,11 +207,62 @@ const logoutUser = asyncHandler(async (req, res) => {
     )
 })
 
+const googleLogin = asyncHandler(async (req, res) => {
+    const {code} = req.query 
+    console.log("google code from user..", code)
+
+    const googleRes = await oauth2client.getToken(code)
+    oauth2client.setCredentials(googleRes.tokens)
+
+    const userRes = await axios.get(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+            headers: {
+            Authorization: `Bearer ${googleRes.tokens.access_token}`,
+            },
+        }
+    );
+
+    console.log("Google Tokens:", googleRes.tokens);
+    console.log("Access Token:", googleRes.tokens.access_token);
+    console.log("userInfo...:", userRes.data);
+
+    const {email, name, picture} = userRes.data;
+    const existedUser = await User.findOne({email})
+    let user = await User.findOne({email})
+    if(!user){
+        user = await User.create({
+            fullName: name,
+            avatar: picture,
+            email,
+            username: name.toLowerCase().replace(/\s+/g, ""),
+            authProvider: "google"
+        })
+    }
+    const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
+    const loggedInUser = await User.findById(user._id).
+    select("-password -refreshToken")
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(200, user,  "login successfully")
+    )
+
+
+})
+
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incommingRefreshToken = req.cookie?.refreshToken || req.body.refreshToken;
 
     if(!incommingRefreshToken){
-        throw new ApiError(401, "Unauthorised user request")
+        throw new ApiError(401, "Unauthorised user request")    
     }
 
    try {
@@ -428,6 +490,7 @@ const getUserWatchHistory = asyncHandler (async (req, res) => {
 
 export { registerUser,
             loginUser,
+            googleLogin,
             logoutUser,
             refreshAccessToken,
             changeCurrentPassword,

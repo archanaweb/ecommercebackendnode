@@ -35,13 +35,6 @@ const videoSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: "User"
         
-    },
-    password: {
-        type: String,
-        required: [true, "Password is required"]
-    },
-    refreshToken:{
-        type: String
     }
 }, {timestamps: true})
 

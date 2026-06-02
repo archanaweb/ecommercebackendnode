@@ -36,9 +36,16 @@ const userSchema = new Schema({
             ref: "Video"
         }
     ],
+    authProvider: {
+        type: String,
+        enum: ["local", "google"],
+        default: "local"
+    },
     password: {
         type: String,
-        required: [true, "Password is required"]
+        required: function () {
+            return this.authProvider === "local";
+        }
     },
     refreshToken:{
         type: String

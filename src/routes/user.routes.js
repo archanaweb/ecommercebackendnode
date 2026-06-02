@@ -3,6 +3,7 @@ import { changeCurrentPassword,
     getCurrentUser, 
     getUserChannelProfile, 
     getUserWatchHistory, 
+    googleLogin, 
     loginUser, 
     logoutUser, 
     refreshAccessToken, 
@@ -29,6 +30,8 @@ router.route("/register").post(
     registerUser
 )
 
+
+router.route("/google").get(googleLogin)
 router.route("/login").post(loginUser)
 
 //Secured route
