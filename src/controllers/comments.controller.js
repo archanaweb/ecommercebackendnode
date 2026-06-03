@@ -1,8 +1,8 @@
 import mongoose from "mongoose"
-import asyncHandler from "../utils/asyncHandler"
-import { Comment } from "../models/comment.models"
-import { ApiError } from "../utils/ApiError"
-import { ApiResponse } from "../utils/ApiResponse"
+import asyncHandler from "../utils/asyncHandler.js"
+import { Comment } from "../models/comment.models.js"
+import { ApiError } from "../utils/ApiError.js"
+import { ApiResponse } from "../utils/ApiResponse.js"
 
 const getVideoComments = asyncHandler(async (req, res) => {
     const {videoId} = req.params
@@ -23,7 +23,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
 const addComments = asyncHandler(async (req, res) => {
     const {content} = req.body
-    const {videoId} = req.param
+    const {videoId} = req.params
     if(!content?.trim()) throw new ApiError(400, "comment content is required")
     const comments = await Comment.create(
         {
@@ -40,7 +40,7 @@ const addComments = asyncHandler(async (req, res) => {
 })
 
 const updateComents = asyncHandler(async(req, res) => {
-    const {commentId} = req.param
+    const {commentId} = req.params
     if(!commentId) throw new ApiError(400, "CommentId is missing")
         const {content} = req.body
     if(!content?.trim()) throw new ApiError(400, "comment content is required")
@@ -63,7 +63,7 @@ const updateComents = asyncHandler(async(req, res) => {
 })
 
 const deleteComment = asyncHandler(async (req, res) => {
-    const {commentId} = req.param
+    const {commentId} = req.params
 
     if(!commentId) throw new ApiError(400, "commentId is missing")
         
